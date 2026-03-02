@@ -16,17 +16,19 @@ W='\033[38;5;255m'   # white
 C='\033[38;5;51m'    # cyan
 Y='\033[38;5;228m'   # yellow
 G='\033[38;5;114m'   # green
-D='\033[38;5;95m'    # dark brown
 B='\033[1m'          # bold
 
-# ── System Info ──────────────────────────────────────────────────────────
+# ── System Info Gathering ────────────────────────────────────────────────
 
 get_os() {
     if [[ -f /etc/os-release ]]; then
-        . /etc/os-release; echo "${PRETTY_NAME:-$NAME}"
+        . /etc/os-release
+        echo "${PRETTY_NAME:-$NAME}"
     elif [[ "$(uname)" == "Darwin" ]]; then
         echo "macOS $(sw_vers -productVersion 2>/dev/null)"
-    else uname -o 2>/dev/null || uname -s; fi
+    else
+        uname -o 2>/dev/null || uname -s
+    fi
 }
 
 get_kernel() { uname -r; }
@@ -36,10 +38,17 @@ get_host() {
         cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null
     elif [[ "$(uname)" == "Darwin" ]]; then
         sysctl -n hw.model 2>/dev/null
-    else echo "Unknown"; fi
+    else
+        echo "Unknown"
+    fi
 }
 
-get_uptime() { uptime -p 2>/dev/null || uptime | sed 's/.*up/up/'; }
+get_uptime() {
+    if command -v uptime &>/dev/null; then
+        uptime -p 2>/dev/null || uptime | sed 's/.*up/up/'
+    fi
+}
+
 get_shell() { basename "${SHELL:-unknown}"; }
 
 get_cpu() {
@@ -47,18 +56,22 @@ get_cpu() {
         grep -m1 "model name" /proc/cpuinfo | cut -d: -f2 | xargs
     elif [[ "$(uname)" == "Darwin" ]]; then
         sysctl -n machdep.cpu.brand_string 2>/dev/null
-    else echo "Unknown"; fi
+    else
+        echo "Unknown"
+    fi
 }
 
 get_memory() {
     if [[ -f /proc/meminfo ]]; then
-        local total available used
+        local total used
         total=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
         available=$(awk '/MemAvailable/ {print int($2/1024)}' /proc/meminfo)
         used=$((total - available))
         echo "${used}MiB / ${total}MiB"
     elif [[ "$(uname)" == "Darwin" ]]; then
-        echo "$(($(sysctl -n hw.memsize) / 1048576))MiB"
+        local total
+        total=$(sysctl -n hw.memsize 2>/dev/null)
+        echo "$((total / 1048576))MiB"
     fi
 }
 
@@ -67,7 +80,9 @@ get_gpu() {
         lspci 2>/dev/null | grep -i 'vga\|3d\|display' | head -1 | sed 's/.*: //'
     elif [[ "$(uname)" == "Darwin" ]]; then
         system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model" | sed 's/.*: //'
-    else echo "Unknown"; fi
+    else
+        echo "Unknown"
+    fi
 }
 
 get_packages() {
@@ -81,50 +96,50 @@ get_packages() {
 
 get_terminal() { echo "${TERM_PROGRAM:-${TERM:-unknown}}"; }
 
-# ── Doro ASCII Art (colored) ─────────────────────────────────────────────
+# ── Doro ASCII Art ───────────────────────────────────────────────────────
 
-ART_LINES=(
-    "${M}       ╱╲          ╱╲"
-    "${M}      ╱  ╲        ╱  ╲"
-    "${M}     ╱    ╲______╱    ╲"
-    "${M}    ╱${D}▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓${M}╲"
-    "${M}   │${D}▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓${M}│"
-    "${M}   │${D}▓▓${W}┌────┐${D}▓▓${W}┌────┐${D}▓▓${M}│"
-    "${M}   │${D}▓▓${W}│${C} ●  ${W}│${D}▓▓${W}│${C} ●  ${W}│${D}▓▓${M}│"
-    "${M}   │${D}▓▓${W}└────┘${D}▓▓${W}└────┘${D}▓▓${M}│"
-    "${P}    ╲${W}      ${Y}▽${W}      ${P}╱"
-    "${P}     ╲${W}    ◡◡◡    ${P}╱"
-    "${P}      ╲__________╱"
-    "${P}     ╱ ${M}│${P}      ${M}│${P} ╲"
-    "${P}    ╱  ${M}│${P}      ${M}│${P}  ╲"
-    "${M}   ╱   │      │   ╲"
-    "${P}   ═══════════════════"
-    "${P}      d o r o 🌸"
-)
+read -r -d '' DORO_ART << 'ART'
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣼⣿⣿⣿⡿⠟⠛⠉⠉⠛⠻⢿⣿⣿⣿⣿⣧⠀⠀⠀⠀
+⠀⠀⠀⣸⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣿⣿⣇⠀⠀⠀
+⠀⠀⢀⣿⣿⡟⠀⠀⢀⣤⣶⣦⠀⣶⣤⡀⠀⠀⢻⣿⣿⣿⡀⠀⠀
+⠀⠀⢸⣿⣿⠃⠀⠀⠸⣿⣿⣿⠀⣿⣿⡇⠀⠀⠘⣿⣿⣿⡇⠀⠀
+⠀⠀⢸⣿⣿⠀⠀⠀⠀⠈⠉⠁⠀⠈⠉⠀⠀⠀⠀⣿⣿⣿⡇⠀⠀
+⠀⠀⠘⣿⣿⡄⠀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⠀⢠⣿⣿⣿⠃⠀⠀
+⠀⠀⠀⢿⣿⣷⡀⠀⠀⠀⠈⠿⠿⠁⠀⠀⠀⢀⣾⣿⣿⡿⠀⠀⠀
+⠀⠀⠀⠈⢿⣿⣿⣦⡀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⠁⠀⠀⠀
+⠀⠀⠀⠀⠈⠻⣿⣿⣿⣶⣤⣀⣀⣤⣶⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠈⠙⠿⣿⣿⣿⣿⣿⣿⣿⠿⠋⠁⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀d o r o f e t c h⠀⠀⠀⠀⠀⠀⠀⠀
+ART
 
-# ── Info Lines ───────────────────────────────────────────────────────────
+# ── Display ──────────────────────────────────────────────────────────────
 
 USER_HOST="${P}${B}${USER}${R}${W}@${P}${B}$(hostname)${R}"
-SEP="${M}────────────────────────────${R}"
+SEPARATOR="${M}──────────────────────────${R}"
 
 INFO_LINES=(
     "$USER_HOST"
-    "$SEP"
-    "${P}${B} OS${R}       ${W}$(get_os)${R}"
-    "${P}${B} Host${R}     ${W}$(get_host)${R}"
-    "${P}${B} Kernel${R}   ${W}$(get_kernel)${R}"
-    "${P}${B} Uptime${R}   ${W}$(get_uptime)${R}"
-    "${P}${B} Pkgs${R}     ${W}$(get_packages)${R}"
-    "${P}${B} Shell${R}    ${W}$(get_shell)${R}"
-    "${P}${B} Term${R}     ${W}$(get_terminal)${R}"
-    "${P}${B} CPU${R}      ${W}$(get_cpu)${R}"
-    "${P}${B} GPU${R}      ${W}$(get_gpu)${R}"
-    "${P}${B} Memory${R}   ${W}$(get_memory)${R}"
-    "$SEP"
+    "$SEPARATOR"
+    "${P}${B} OS${R}${W}       $(get_os)${R}"
+    "${P}${B} Host${R}${W}     $(get_host)${R}"
+    "${P}${B} Kernel${R}${W}   $(get_kernel)${R}"
+    "${P}${B} Uptime${R}${W}   $(get_uptime)${R}"
+    "${P}${B} Pkgs${R}${W}     $(get_packages)${R}"
+    "${P}${B} Shell${R}${W}    $(get_shell)${R}"
+    "${P}${B} Term${R}${W}     $(get_terminal)${R}"
+    "${P}${B} CPU${R}${W}      $(get_cpu)${R}"
+    "${P}${B} GPU${R}${W}      $(get_gpu)${R}"
+    "${P}${B} Memory${R}${W}   $(get_memory)${R}"
+    "$SEPARATOR"
     "${M}  ●${P}  ●${C}  ●${G}  ●${Y}  ●${W}  ●${R}"
 )
 
-# ── Render ───────────────────────────────────────────────────────────────
+# Print Doro art side-by-side with system info
+IFS=$'\n' read -rd '' -a ART_LINES <<< "$DORO_ART"
 
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
@@ -132,9 +147,8 @@ max=$((art_count > info_count ? art_count : info_count))
 
 echo ""
 for ((i = 0; i < max; i++)); do
-    art="${ART_LINES[$i]:-}"
-    info="${INFO_LINES[$i]:-}"
-    # Use printf with fixed-width for alignment; art has ANSI so we pad manually
-    printf "  %b%-30s %b\n" "$art" "" "$info"
+    art_line="${ART_LINES[$i]:-}"
+    info_line="${INFO_LINES[$i]:-}"
+    printf "${P}%-45s${R} %b\n" "$art_line" "$info_line"
 done
 echo ""
