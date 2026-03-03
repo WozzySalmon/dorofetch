@@ -51,11 +51,7 @@ get_cpu() {
 
 get_memory() {
     if [[ -f /proc/meminfo ]]; then
-        local total available used
-        total=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
-        available=$(awk '/MemAvailable/ {print int($2/1024)}' /proc/meminfo)
-        used=$((total - available))
-        echo "${used}MiB / ${total}MiB"
+        awk '/MemTotal/ {t=$2} /MemAvailable/ {a=$2} END {print int((t-a)/1024) "MiB / " int(t/1024) "MiB"}' /proc/meminfo
     elif [[ "$(uname)" == "Darwin" ]]; then
         echo "$(($(sysctl -n hw.memsize) / 1048576))MiB"
     fi
@@ -71,14 +67,16 @@ get_gpu() {
 
 get_packages() {
     local count=0
-    command -v dpkg &>/dev/null && count=$((count + $(dpkg --list 2>/dev/null | grep -c '^ii')))
+    command -v dpkg-query &>/dev/null && count=$((count + $(dpkg-query -f '.\n' -W 2>/dev/null | wc -l)))
     command -v rpm &>/dev/null && count=$((count + $(rpm -qa 2>/dev/null | wc -l)))
-    command -v pacman &>/dev/null && count=$((count + $(pacman -Q 2>/dev/null | wc -l)))
+    command -v pacman &>/dev/null && count=$((count + $(pacman -Qq 2>/dev/null | wc -l)))
     command -v brew &>/dev/null && count=$((count + $(brew list 2>/dev/null | wc -l)))
     [[ $count -gt 0 ]] && echo "$count" || echo "Unknown"
 }
 
 get_terminal() { echo "${TERM_PROGRAM:-${TERM:-unknown}}"; }
+
+get_wm() { echo "${XDG_CURRENT_DESKTOP:-${DESKTOP_SESSION:-unknown}}"; }
 
 # ── Doro ASCII Art ───────────────────────────────────────────────────────
 
@@ -114,6 +112,7 @@ INFO_LINES=(
     "${P}${B} Pkgs${R}     ${W}$(get_packages)${R}"
     "${P}${B} Shell${R}    ${W}$(get_shell)${R}"
     "${P}${B} Term${R}     ${W}$(get_terminal)${R}"
+    "${P}${B} WM${R}       ${W}$(get_wm)${R}"
     "${P}${B} CPU${R}      ${W}$(get_cpu)${R}"
     "${P}${B} GPU${R}      ${W}$(get_gpu)${R}"
     "${P}${B} Memory${R}   ${W}$(get_memory)${R}"
