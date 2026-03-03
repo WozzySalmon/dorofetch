@@ -128,9 +128,22 @@ max=$((art_count > info_count ? art_count : info_count))
 
 echo ""
 for ((i = 0; i < max; i++)); do
-    art="${ART_LINES[$i]:-$BLANK_ART}"
+    # Art column: art, then dorofetch, then blank
+    if ((i < art_count)); then
+        art="${ART_LINES[$i]}"
+    elif ((i == art_count)); then
+        art="     d o r o f e t c h"
+    else
+        art=""
+    fi
+    
     info="${INFO_LINES[$i]:-}"
-    echo -e "  ${P}${art}${R}  ${info}"
+    
+    if [[ -n "$art" ]]; then
+        echo -e "  ${P}${art}${R}  ${info}"
+    else
+        # Align info column when art is empty (approximate spacing)
+        echo -e "                            ${info}"
+    fi
 done
-echo -e "  ${P}    d o r o f e t c h${R}"
 echo ""
