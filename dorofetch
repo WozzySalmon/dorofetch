@@ -255,19 +255,18 @@ INFO_LINES=(
 )
 
 # ── Render ───────────────────────────────────────────────────────────────
-
-art_count=${#ART_LINES[@]}
-info_count=${#INFO_LINES[@]}
-INFO_COL=40# column where info starts - adjust if needed
+INFO_START=52
 
 echo ""
 for ((i = 0; i < art_count; i++)); do
-    echo -e "  ${P}${ART_LINES[$i]}${R}\033[${INFO_COL}G${INFO_LINES[$i]:-}"
+    printf "  ${P}%s${R}\033[${INFO_START}G" "${ART_LINES[$i]}"
+    echo -e "${INFO_LINES[$i]:-}"
 done
 
 echo -e "  ${P}     d o r o f e t c h${R}"
 
 for ((i = art_count; i < info_count; i++)); do
-    echo -e "\033[${INFO_COL}G${INFO_LINES[$i]}"
+    printf "\033[${INFO_START}G"
+    echo -e "${INFO_LINES[$i]}"
 done
 echo ""
