@@ -121,7 +121,7 @@ INFO_LINES=(
 
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
-PAD="                        "  # 24 spaces
+PAD="                           "  # 24 spaces
 
 echo ""
 for ((i = 0; i < art_count; i++)); do
