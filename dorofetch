@@ -116,7 +116,7 @@ INFO_LINES=(
     "${P}${B} Term${R}     ${W}$(get_terminal)${R}"
     "${P}${B} WM${R}       ${W}$(get_wm)${R}"
     "${P}${B} CPU${R}      ${W}$(get_cpu)${R}"
-    ""
+    "    "
     "${P}${B} GPU${R}      ${W}$(get_gpu)${R}"
     "${P}${B} Memory${R}   ${W}$(get_memory)${R}"
     "$SEP"
