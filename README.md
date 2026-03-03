@@ -13,13 +13,46 @@ A [neofetch](https://github.com/dylanaraps/neofetch) clone that prints **Doro** 
 git clone https://github.com/WozzySalmon/dorofetch.git
 cd dorofetch
 
-# Make it yours
+# Make it executable
 chmod +x dorofetch
-sudo cp dorofetch /usr/local/bin/
 
-# Run it
+# Symlink it (recommended — stays synced with git pull)
+sudo ln -sf "$(pwd)/dorofetch" /usr/local/bin/dorofetch
+
+# Run it from anywhere
 dorofetch
 ```
+
+To update:
+```bash
+cd ~/dorofetch  # or wherever you cloned it
+git pull
+# That's it — symlink picks up changes automatically
+```
+
+## Usage
+
+```bash
+dorofetch                    # default Doro logo
+dorofetch --logo doro_small  # alternate logo
+dorofetch --logo /path/to/custom.txt  # your own logo file
+```
+
+## Custom Logos
+
+Drop a `.txt` file in the `logos/` directory. Format:
+
+```
+# colors: 213 177
+$1⠀⠀art with $1 for first color
+$1⠀⠀and $2 for second color
+```
+
+- First line: `# colors:` followed by ANSI 256-color codes (space-separated)
+- Use `$1`, `$2`, `$3`... in the art to switch colors mid-line
+- No color header = falls back to pink
+
+See `logos/doro_small.txt` for a multi-color example.
 
 ## What It Shows
 
