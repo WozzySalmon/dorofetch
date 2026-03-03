@@ -255,6 +255,8 @@ INFO_LINES=(
 )
 
 # ── Render ───────────────────────────────────────────────────────────────
+art_count=${#ART_LINES[@]}
+info_count=${#INFO_LINES[@]}
 INFO_START=52
 
 echo ""
@@ -263,9 +265,12 @@ for ((i = 0; i < art_count; i++)); do
     echo -e "${INFO_LINES[$i]:-}"
 done
 
-echo -e "  ${P}     d o r o f e t c h${R}"
+# dorofetch line paired with the next info line
+printf "  ${P}     d o r o f e t c h${R}\033[${INFO_START}G"
+echo -e "${INFO_LINES[$art_count]:-}"
 
-for ((i = art_count; i < info_count; i++)); do
+# remaining info lines after that
+for ((i = art_count + 1; i < info_count; i++)); do
     printf "\033[${INFO_START}G"
     echo -e "${INFO_LINES[$i]}"
 done
