@@ -136,5 +136,5 @@ for ((i = 0; i < max; i++)); do
     info="${INFO_LINES[$i]:-}"
     echo -e "  ${P}${art}${R}  ${info}"
 done
-echo -e "  ${P}d o r o f e t c h${R}"
+echo -e "  ${P}    d o r o f e t c h${R}"
 echo ""
