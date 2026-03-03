@@ -58,18 +58,8 @@ get_memory() {
 }
 
 get_gpu() {
-    # Try nvidia-smi first (best for NVIDIA cards)
-    if command -v nvidia-smi &>/dev/null; then
-        nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1
-        return
-    fi
     if command -v lspci &>/dev/null; then
-        local gpu
-        gpu=$(lspci 2>/dev/null | grep -i 'vga\|3d\|display' | head -1 | sed 's/.*: //')
-        # Clean up common junk (brackets, rev info)
-        gpu=$(echo "$gpu" | sed 's/ (rev [0-9a-f]*)//; s/\[//g; s/\]//g; s/Device [0-9a-f:]*//i')
-        gpu=$(echo "$gpu" | xargs)  # trim whitespace
-        [[ -n "$gpu" ]] && echo "$gpu" || echo "Unknown"
+        lspci 2>/dev/null | grep -i 'vga\|3d\|display' | head -1 | sed 's/.*: //'
     elif [[ "$(uname)" == "Darwin" ]]; then
         system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model" | sed 's/.*: //'
     else echo "Unknown"; fi
