@@ -92,11 +92,6 @@ ART_LINES=(
     "⠀⠀⠀⠀⢷⡀⢻⡶⣤⣤⠀⠀⠀⠀⣀⣤⡴⠛⡇⠀⠀⡏⠀⠀"
     "⠀⠀⠀⠀⠈⠳⠼⠃⠀⠈⢧⡀⠀⠀⡇⠀⠀⠀⠻⣄⣀⡟⠀⠀"
     "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠶⠾⠁⠀⠀⠀⠀⠈⠉⠀⠀⠀"
-    "     d o r o f e t c h       "
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 )
 # ── Info Lines ───────────────────────────────────────────────────────────
 
@@ -116,7 +111,6 @@ INFO_LINES=(
     "${P}${B} Term${R}     ${W}$(get_terminal)${R}"
     "${P}${B} WM${R}       ${W}$(get_wm)${R}"
     "${P}${B} CPU${R}      ${W}$(get_cpu)${R}"
-    "    "
     "${P}${B} GPU${R}      ${W}$(get_gpu)${R}"
     "${P}${B} Memory${R}   ${W}$(get_memory)${R}"
     "$SEP"
@@ -125,14 +119,20 @@ INFO_LINES=(
 
 # ── Render ───────────────────────────────────────────────────────────────
 
+BLANK_ART="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
-max=$((art_count > info_count ? art_count : info_count))
 
 echo ""
-for ((i = 0; i < max; i++)); do
-    art="${ART_LINES[$i]:-}"
-    info="${INFO_LINES[$i]:-}"
-    echo -e "  ${P}${art}${R}  ${info}"
+# Print art paired with info
+for ((i = 0; i < art_count; i++)); do
+    echo -e "  ${P}${ART_LINES[$i]}${R}  ${INFO_LINES[$i]:-}"
 done
-echo ""
+
+# Print dorofetch on its own line (no info next to it)
+echo -e "  ${P}     d o r o f e t c h${R}"
+
+# Print remaining info lines with Braille blanks for alignment
+for ((i = art_count; i < info_count; i++)); do
+    echo -e "  ${P}${BLANK_ART}${R}  ${INFO_LINES[$i]}"
+done
