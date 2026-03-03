@@ -119,20 +119,18 @@ INFO_LINES=(
 
 # ── Render ───────────────────────────────────────────────────────────────
 
-BLANK_ART="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
+INFO_COL=30  # column where info starts - adjust if needed
 
 echo ""
-# Print art paired with info
 for ((i = 0; i < art_count; i++)); do
-    echo -e "  ${P}${ART_LINES[$i]}${R}  ${INFO_LINES[$i]:-}"
+    echo -e "  ${P}${ART_LINES[$i]}${R}\033[${INFO_COL}G${INFO_LINES[$i]:-}"
 done
 
-# Print dorofetch on its own line (no info next to it)
 echo -e "  ${P}     d o r o f e t c h${R}"
 
-# Print remaining info lines with Braille blanks for alignment
 for ((i = art_count; i < info_count; i++)); do
-    echo -e "  ${P}${BLANK_ART}${R}  ${INFO_LINES[$i]}"
+    echo -e "\033[${INFO_COL}G${INFO_LINES[$i]}"
 done
+echo ""
