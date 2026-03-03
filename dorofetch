@@ -10,6 +10,143 @@
 
 # Colors
 R='\033[0m'
+P='\033[38;5;213m'
+M='\033[38;5;177m'
+W='\033[38;5;255m'
+C='\033[38;5;51m'
+Y='\033[38;5;228m'
+G='\033[38;5;114m'
+B='\033[1m'
+
+# ── System Info ──────────────────────────────────────────────────────────
+
+get_os() {
+    if [[ -f /etc/os-release ]]; then
+        . /etc/os-release; echo "${PRETTY_NAME:-$NAME}"
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        echo "macOS $(sw_vers -productVersion 2>/dev/null)"
+    else uname -o 2>/dev/null || uname -s; fi
+}
+
+get_kernel() { uname -r; }
+
+get_host() {
+    if [[ -f /sys/devices/virtual/dmi/id/product_name ]]; then
+        cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        sysctl -n hw.model 2>/dev/null
+    else echo "Unknown"; fi
+}
+
+get_uptime() { uptime -p 2>/dev/null || uptime | sed 's/.*up/up/'; }
+get_shell() { basename "${SHELL:-unknown}"; }
+
+get_cpu() {
+    if [[ -f /proc/cpuinfo ]]; then
+        grep -m1 "model name" /proc/cpuinfo | cut -d: -f2 | xargs
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        sysctl -n machdep.cpu.brand_string 2>/dev/null
+    else echo "Unknown"; fi
+}
+
+get_memory() {
+    if [[ -f /proc/meminfo ]]; then
+        awk '/MemTotal/ {t=$2} /MemAvailable/ {a=$2} END {print int((t-a)/1024) "MiB / " int(t/1024) "MiB"}' /proc/meminfo
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        echo "$(($(sysctl -n hw.memsize) / 1048576))MiB"
+    fi
+}
+
+get_gpu() {
+    if command -v lspci &>/dev/null; then
+        lspci 2>/dev/null | grep -i 'vga\|3d\|display' | head -1 | sed 's/.*: //'
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model" | sed 's/.*: //'
+    else echo "Unknown"; fi
+}
+
+get_packages() {
+    local count=0
+    command -v dpkg-query &>/dev/null && count=$((count + $(dpkg-query -f '.\n' -W 2>/dev/null | wc -l)))
+    command -v rpm &>/dev/null && count=$((count + $(rpm -qa 2>/dev/null | wc -l)))
+    command -v pacman &>/dev/null && count=$((count + $(pacman -Qq 2>/dev/null | wc -l)))
+    command -v brew &>/dev/null && count=$((count + $(brew list 2>/dev/null | wc -l)))
+    [[ $count -gt 0 ]] && echo "$count" || echo "Unknown"
+}
+
+get_terminal() { echo "${TERM_PROGRAM:-${TERM:-unknown}}"; }
+
+get_wm() { echo "${XDG_CURRENT_DESKTOP:-${DESKTOP_SESSION:-unknown}}"; }
+
+# ── Doro ASCII Art ───────────────────────────────────────────────────────
+
+ART_LINES=(
+    "⠀⠀⠀⠀⢀⠴⣲⣯⣉⣽⣿⡛⠻⣶⠖⢒⢶⣦⣄⠀⠀⠀⠀⠀"
+    "⠀⠀⢀⡴⢁⡜⠉⠋⠉⠹⠉⠱⡄⠙⢦⣼⣾⣿⣿⣧⠀⠀⠀⠀"
+    "⠀⢀⡞⢀⡞⢀⡄⠀⠀⢀⢸⠀⠹⡀⠈⣟⠿⣿⣿⣟⣉⡇⠀⠀"
+    "⣴⣫⠀⢸⢠⣾⡇⢠⠀⢸⢰⢆⠀⡇⠀⢹⣿⣿⣿⣿⣌⡇⠀⠀"
+    "⠀⠀⢀⡼⢻⠛⢿⡾⠦⣿⣿⣿⣷⡇⠀⢸⠁⣯⣿⠛⡹⠛⣦⠀"
+    "⠀⢰⢨⠀⠈⢓⢺⢁⣀⠀⢿⢀⣼⠃⠀⣸⣠⠃⣇⡴⠁⠀⢸⡇"
+    "⠀⠘⣎⢓⢤⣄⣀⣉⡉⣁⣀⣠⣿⡆⢠⠟⠁⠀⠘⠁⠀⠀⢸⡇"
+    "⠀⠀⠈⢺⡿⠇⡀⠉⠉⠉⠉⢉⣼⡡⠋⠀⠀⢀⣴⠀⠀⣠⠟⠀"
+    "⠀⠀⠀⠀⢷⡀⢻⡶⣤⣤⠀⠀⠀⠀⣀⣤⡴⠛⡇⠀⠀⡏⠀⠀"
+    "⠀⠀⠀⠀⠈⠳⠼⠃⠀⠈⢧⡀⠀⠀⡇⠀⠀⠀⠻⣄⣀⡟⠀⠀"
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠶⠾⠁⠀⠀⠀⠀⠈⠉⠀⠀⠀"
+)
+
+# ── Info Lines ───────────────────────────────────────────────────────────
+
+USER_HOST="${P}${B}${USER}${R}${W}@${P}${B}$(hostname)${R}"
+SEP="${M}──────────────────────────────${R}"
+
+INFO_LINES=(
+    "$USER_HOST"
+    "$SEP"
+    "${P}${B} OS${R}       ${W}$(get_os)${R}"
+    "${P}${B} Host${R}     ${W}$(get_host)${R}"
+    "${P}${B} Kernel${R}   ${W}$(get_kernel)${R}"
+    "${P}${B} Uptime${R}   ${W}$(get_uptime)${R}"
+    "${P}${B} Pkgs${R}     ${W}$(get_packages)${R}"
+    "${P}${B} Shell${R}    ${W}$(get_shell)${R}"
+    "${P}${B} Term${R}     ${W}$(get_terminal)${R}"
+    "${P}${B} WM${R}       ${W}$(get_wm)${R}"
+    "${P}${B} CPU${R}      ${W}$(get_cpu)${R}"
+    "${P}${B} GPU${R}      ${W}$(get_gpu)${R}"
+    "${P}${B} Memory${R}   ${W}$(get_memory)${R}"
+    "$SEP"
+    "${M}  ●${P}  ●${C}  ●${G}  ●${Y}  ●${W}  ●${R}"
+)
+
+# ── Render ───────────────────────────────────────────────────────────────
+
+art_count=${#ART_LINES[@]}
+info_count=${#INFO_LINES[@]}
+COL=52  # adjust this number if info doesn't align
+
+echo ""
+for ((i = 0; i < art_count; i++)); do
+    printf "  ${P}%s${R}\033[${COL}G" "${ART_LINES[$i]}"
+    echo -e "${INFO_LINES[$i]:-}"
+done
+
+echo -e "  ${P}     d o r o f e t c h${R}"
+
+for ((i = art_count; i < info_count; i++)); do
+    printf "\033[${COL}G"
+    echo -e "${INFO_LINES[$i]}"
+done
+echo ""#!/usr/bin/env bash
+#  ____                   _____    _       _
+# |  _ \  ___  _ __ ___  |  ___|__| |_ ___| |__
+# | | | |/ _ \| '__/ _ \ | |_ / _ \ __/ __| '_ \
+# | |_| | (_) | | | (_) ||  _|  __/ || (__| | | |
+# |____/ \___/|_|  \___/ |_|  \___|\__\___|_| |_|
+#
+# dorofetch - a neofetch clone that prints Doro
+# by Mr.Bigg & Jess
+
+# Colors
+R='\033[0m'
 P='\033[38;5;213m'   # pink
 M='\033[38;5;177m'   # magenta
 W='\033[38;5;255m'   # white
