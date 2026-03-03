@@ -118,11 +118,10 @@ INFO_LINES=(
 )
 
 # ── Render ───────────────────────────────────────────────────────────────
+
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
-
-# Copy one of the actual blank lines from your art to guarantee same width
-BLANK_ART="${ART_LINES[0]//[⠀-⣿]/⠀}"
+PAD="                        "  # 24 spaces
 
 echo ""
 for ((i = 0; i < art_count; i++)); do
@@ -132,6 +131,6 @@ done
 echo -e "  ${P}     d o r o f e t c h${R}"
 
 for ((i = art_count; i < info_count; i++)); do
-    echo -e "  ${ART_LINES[0]//?/⠀}  ${INFO_LINES[$i]}"
+    echo -e "  ${PAD}  ${INFO_LINES[$i]}"
 done
 echo ""
