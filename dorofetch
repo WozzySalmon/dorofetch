@@ -121,7 +121,7 @@ INFO_LINES=(
 
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
-INFO_COL=30  # column where info starts - adjust if needed
+INFO_COL=40# column where info starts - adjust if needed
 
 echo ""
 for ((i = 0; i < art_count; i++)); do
