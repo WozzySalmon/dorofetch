@@ -92,8 +92,11 @@ ART_LINES=(
     "⠀⠀⠀⠀⢷⡀⢻⡶⣤⣤⠀⠀⠀⠀⣀⣤⡴⠛⡇⠀⠀⡏⠀⠀"
     "⠀⠀⠀⠀⠈⠳⠼⠃⠀⠈⢧⡀⠀⠀⡇⠀⠀⠀⠻⣄⣀⡟⠀⠀"
     "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠶⠾⠁⠀⠀⠀⠀⠈⠉⠀⠀⠀"
+    "     d o r o f e t c h       "
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
 )
-
 # ── Info Lines ───────────────────────────────────────────────────────────
 
 USER_HOST="${P}${B}${USER}${R}${W}@${P}${B}$(hostname)${R}"
@@ -121,16 +124,12 @@ INFO_LINES=(
 
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
-PAD="                           "  # 24 spaces
+max=$((art_count > info_count ? art_count : info_count))
 
 echo ""
-for ((i = 0; i < art_count; i++)); do
-    echo -e "  ${P}${ART_LINES[$i]}${R}  ${INFO_LINES[$i]:-}"
-done
-
-echo -e "  ${P}     d o r o f e t c h${R}"
-
-for ((i = art_count; i < info_count; i++)); do
-    echo -e "  ${PAD}  ${INFO_LINES[$i]}"
+for ((i = 0; i < max; i++)); do
+    art="${ART_LINES[$i]:-}"
+    info="${INFO_LINES[$i]:-}"
+    echo -e "  ${P}${art}${R}  ${info}"
 done
 echo ""
