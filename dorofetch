@@ -130,7 +130,7 @@ max=$((art_count > info_count ? art_count : info_count))
 
 echo ""
 for ((i = 0; i < max; i++)); do
-    art="${ART_LINES[$i]:-}"
+    art="${ART_LINES[$i]:-                                          }"
     info="${INFO_LINES[$i]:-}"
     printf "  ${P}%-42s${R} %b\n" "$art" "$info"
 done
