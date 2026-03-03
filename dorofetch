@@ -129,7 +129,7 @@ for ((i = 0; i < max; i++)); do
     if ((i < art_count)); then
         art="${ART_LINES[$i]}"
     elif ((i == art_count)); then
-        art="     d o r o f e t c h"
+        art="     d o r o f e t c h   "
     else
         art=""
     fi
