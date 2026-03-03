@@ -8,15 +8,73 @@
 # dorofetch - a neofetch clone that prints Doro
 # by Mr.Bigg & Jess
 
-# Colors
+# ── Default Colors ───────────────────────────────────────────────────────
+
 R='\033[0m'
-P='\033[38;5;213m'
-M='\033[38;5;177m'
-W='\033[38;5;255m'
-C='\033[38;5;51m'
-Y='\033[38;5;228m'
-G='\033[38;5;114m'
-B='\033[1m'
+P='\033[38;5;213m'   # pink
+M='\033[38;5;177m'   # magenta
+W='\033[38;5;255m'   # white
+C='\033[38;5;51m'    # cyan
+Y='\033[38;5;228m'   # yellow
+G='\033[38;5;114m'   # green
+B='\033[1m'          # bold
+
+# ── Logo Loading ─────────────────────────────────────────────────────────
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOGO_DIR="${SCRIPT_DIR}/logos"
+LOGO_FILE="${LOGO_DIR}/doro.txt"
+
+# Allow --logo <name> flag
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --logo|-l)
+            if [[ -f "${LOGO_DIR}/${2}.txt" ]]; then
+                LOGO_FILE="${LOGO_DIR}/${2}.txt"
+            elif [[ -f "$2" ]]; then
+                LOGO_FILE="$2"
+            fi
+            shift 2
+            ;;
+        *) shift ;;
+    esac
+done
+
+load_logo() {
+    local file="$1"
+    local logo_colors=()
+    ART_LINES=()
+
+    while IFS= read -r line; do
+        # Parse color header: "# colors: 213 177 51"
+        if [[ "$line" =~ ^#\ colors:\ (.+) ]]; then
+            read -ra logo_colors <<< "${BASH_REMATCH[1]}"
+            continue
+        fi
+        # Skip other comments and empty lines at top
+        [[ "$line" =~ ^# ]] && continue
+        [[ -z "$line" ]] && continue
+
+        # Replace $1, $2, $3... with ANSI color codes from header
+        for i in "${!logo_colors[@]}"; do
+            local n=$((i + 1))
+            local color_code
+            color_code=$(printf '\033[38;5;%sm' "${logo_colors[$i]}")
+            line="${line//\$$n/$color_code}"
+        done
+
+        ART_LINES+=("$line")
+    done < "$file"
+
+    # If no color header found, use default pink
+    if [[ ${#logo_colors[@]} -eq 0 ]]; then
+        LOGO_COLOR="$P"
+    else
+        LOGO_COLOR="\033[38;5;${logo_colors[0]}m"
+    fi
+}
+
+load_logo "$LOGO_FILE"
 
 # ── System Info ──────────────────────────────────────────────────────────
 
@@ -78,22 +136,6 @@ get_terminal() { echo "${TERM_PROGRAM:-${TERM:-unknown}}"; }
 
 get_wm() { echo "${XDG_CURRENT_DESKTOP:-${DESKTOP_SESSION:-unknown}}"; }
 
-# ── Doro ASCII Art ───────────────────────────────────────────────────────
-
-ART_LINES=(
-    "⠀⠀⠀⠀⢀⠴⣲⣯⣉⣽⣿⡛⠻⣶⠖⢒⢶⣦⣄⠀⠀⠀⠀⠀"
-    "⠀⠀⢀⡴⢁⡜⠉⠋⠉⠹⠉⠱⡄⠙⢦⣼⣾⣿⣿⣧⠀⠀⠀⠀"
-    "⠀⢀⡞⢀⡞⢀⡄⠀⠀⢀⢸⠀⠹⡀⠈⣟⠿⣿⣿⣟⣉⡇⠀⠀"
-    "⣴⣫⠀⢸⢠⣾⡇⢠⠀⢸⢰⢆⠀⡇⠀⢹⣿⣿⣿⣿⣌⡇⠀⠀"
-    "⠀⠀⢀⡼⢻⠛⢿⡾⠦⣿⣿⣿⣷⡇⠀⢸⠁⣯⣿⠛⡹⠛⣦⠀"
-    "⠀⢰⢨⠀⠈⢓⢺⢁⣀⠀⢿⢀⣼⠃⠀⣸⣠⠃⣇⡴⠁⠀⢸⡇"
-    "⠀⠘⣎⢓⢤⣄⣀⣉⡉⣁⣀⣠⣿⡆⢠⠟⠁⠀⠘⠁⠀⠀⢸⡇"
-    "⠀⠀⠈⢺⡿⠇⡀⠉⠉⠉⠉⢉⣼⡡⠋⠀⠀⢀⣴⠀⠀⣠⠟⠀"
-    "⠀⠀⠀⠀⢷⡀⢻⡶⣤⣤⠀⠀⠀⠀⣀⣤⡴⠛⡇⠀⠀⡏⠀⠀"
-    "⠀⠀⠀⠀⠈⠳⠼⠃⠀⠈⢧⡀⠀⠀⡇⠀⠀⠀⠻⣄⣀⡟⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠶⠾⠁⠀⠀⠀⠀⠈⠉⠀⠀⠀"
-)
-
 # ── Info Lines ───────────────────────────────────────────────────────────
 
 USER_HOST="${P}${B}${USER}${R}${W}@${P}${B}$(hostname)${R}"
@@ -118,21 +160,22 @@ INFO_LINES=(
 )
 
 # ── Render ───────────────────────────────────────────────────────────────
+
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
 INFO_START=52
 
 echo ""
 for ((i = 0; i < art_count; i++)); do
-    printf "  ${P}%s${R}\033[${INFO_START}G" "${ART_LINES[$i]}"
+    printf "  ${LOGO_COLOR}%s${R}\033[${INFO_START}G" "${ART_LINES[$i]}"
     echo -e "${INFO_LINES[$i]:-}"
 done
 
-# dorofetch line paired with the next info line
-printf "  ${P}     d o r o f e t c h${R}\033[${INFO_START}G"
+# "dorofetch" label + next info line
+printf "  ${LOGO_COLOR}     d o r o f e t c h${R}\033[${INFO_START}G"
 echo -e "${INFO_LINES[$art_count]:-}"
 
-# remaining info lines after that
+# remaining info lines
 for ((i = art_count + 1; i < info_count; i++)); do
     printf "\033[${INFO_START}G"
     echo -e "${INFO_LINES[$i]}"
