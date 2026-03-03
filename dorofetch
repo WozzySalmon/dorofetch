@@ -134,7 +134,7 @@ echo ""
 for ((i = 0; i < max; i++)); do
     art="${ART_LINES[$i]:-$BLANK_ART}"
     info="${INFO_LINES[$i]:-}"
-    printf "  ${P}%-42s${R} %b\n" "$art" "$info"
+    echo -e "  ${P}${art}${R}  ${info}"
 done
 echo -e "  ${P}     d o r o f e t c h${R}"
 echo ""
