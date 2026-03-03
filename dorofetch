@@ -118,29 +118,23 @@ INFO_LINES=(
 )
 
 # ── Render ───────────────────────────────────────────────────────────────
-BLANK_ART="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
-max=$((art_count > info_count ? art_count : info_count))
 
 echo ""
-for ((i = 0; i < max; i++)); do
-    if ((i < art_count)); then
-        art="${ART_LINES[$i]}"
-    elif ((i == art_count)); then
-        art="     d o r o f e t c h   "
-    else
-        art=""
-    fi
-    
+# Print art lines with corresponding info
+for ((i = 0; i < art_count; i++)); do
+    art="${ART_LINES[$i]}"
     info="${INFO_LINES[$i]:-}"
-    
-    if [[ -n "$art" ]]; then
-        echo -e "  ${P}${art}${R}  ${info}"
-    else
-        # 52 spaces = 2 prefix + 48 art width + 2 suffix
-        echo "                                                    ${info}"
-    fi
+    echo -e "  ${P}${art}${R}  ${info}"
 done
-echo ""
+
+# Print dorofetch centered under the art
+echo -e "  ${P}     d o r o f e t c h${R}"
+
+# Print remaining info lines aligned with blank art
+BLANK_ART="⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
+for ((i = art_count; i < info_count; i++)); do
+    info="${INFO_LINES[$i]}"
+    echo -e "  ${P}${BLANK_ART}${R}  ${info}"
+done
