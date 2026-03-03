@@ -121,22 +121,17 @@ INFO_LINES=(
 art_count=${#ART_LINES[@]}
 info_count=${#INFO_LINES[@]}
 
-# Use the actual art to determine spacing
-FIRST_ART="${ART_LINES[0]}"
+# Copy one of the actual blank lines from your art to guarantee same width
+BLANK_ART="${ART_LINES[0]//[⠀-⣿]/⠀}"
 
 echo ""
-# Print art lines with corresponding info
 for ((i = 0; i < art_count; i++)); do
     echo -e "  ${P}${ART_LINES[$i]}${R}  ${INFO_LINES[$i]:-}"
 done
 
-# Print dorofetch under the art
 echo -e "  ${P}     d o r o f e t c h${R}"
 
-# Print remaining info - reuse first art line as blank template
 for ((i = art_count; i < info_count; i++)); do
-    # Replace all non-blank Braille with blank Braille pattern
-    blank_line="${FIRST_ART//[^⠀]/⠀}"
-    echo -e "  ${P}${blank_line}${R}  ${INFO_LINES[$i]}"
+    echo -e "  ${ART_LINES[0]//?/⠀}  ${INFO_LINES[$i]}"
 done
 echo ""
