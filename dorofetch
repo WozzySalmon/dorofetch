@@ -187,13 +187,14 @@ INFO_LINES=(
     "$USER_HOST"
     "$SEP"
     "${P}${B} OS${R}       ${W}$(get_os)${R}"
-    "${P}${B} Host${R}     ${W}$(get_host)${R}"
     "${P}${B} Kernel${R}   ${W}$(get_kernel)${R}"
     "${P}${B} Uptime${R}   ${W}$(get_uptime)${R}"
     "${P}${B} Pkgs${R}     ${W}$(get_packages)${R}"
     "${P}${B} Shell${R}    ${W}$(get_shell)${R}"
     "${P}${B} Term${R}     ${W}$(get_terminal)${R}"
     "${P}${B} WM${R}       ${W}$(get_wm)${R}"
+    "$SEP"
+    "${P}${B} Host${R}     ${W}$(get_host)${R}"
     "${P}${B} CPU${R}      ${W}$(get_cpu)${R}"
     "${P}${B} GPU${R}      ${W}$(get_gpu)${R}"
     "${P}${B} Memory${R}   ${W}$(get_memory)${R}"
@@ -210,7 +211,7 @@ INFO_START=52
 echo ""
 # "dorofetch" label above everything (bold + double-width spacing)
 printf "\033[${INFO_START}G"
-echo -e "${P}${B}\033[1mD o r o f e t c h${R}"
+echo -e "${P}${B}     D o r o f e t c h${R}"
 
 for ((i = 0; i < art_count; i++)); do
     printf "  ${LOGO_COLOR}%s${R}\033[${INFO_START}G" "${ART_LINES[$i]}"
