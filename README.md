@@ -33,12 +33,37 @@ git pull
 ## Usage
 
 ```bash
-dorofetch                    # default Doro logo
-dorofetch --logo doro_small  # alternate logo
-dorofetch --logo /path/to/custom.txt  # your own logo file
+dorofetch                          # default Doro logo (image if available, braille fallback)
+dorofetch --logo doro_small        # alternate braille logo
+dorofetch --logo doro              # auto-detects doro.png > doro.txt
+dorofetch --logo ~/pics/waifu.png  # any image file
 ```
 
-## Custom Logos
+## Image Support
+
+dorofetch can render actual images in your terminal using [chafa](https://hpjansson.org/chafa/).
+
+```bash
+# Install chafa
+sudo apt install chafa     # Debian/Ubuntu
+sudo pacman -S chafa       # Arch
+brew install chafa          # macOS
+scoop install chafa         # Windows (scoop)
+```
+
+Drop a `.png`, `.jpg`, `.gif`, or `.webp` in the `logos/` directory. The `--logo` flag auto-detects image files:
+
+```bash
+# logos/doro.png exists → renders as image
+dorofetch --logo doro
+
+# Direct path to any image
+dorofetch --logo /path/to/image.png
+```
+
+If `chafa` is not installed, dorofetch falls back to the `.txt` braille art automatically.
+
+## Custom Braille Logos
 
 Drop a `.txt` file in the `logos/` directory. Format:
 
@@ -56,20 +81,37 @@ See `logos/doro_small.txt` for a multi-color example.
 
 ## What It Shows
 
-- 🖥️ OS, Kernel, Host
+**Software**
+- 👤 User — user@hostname
+- 🖥️ OS & Kernel
 - ⏰ Uptime
 - 📦 Package count
 - 🐚 Shell & Terminal
-- 🧠 CPU & GPU
+- 🪟 Window Manager
+
+**Hardware**
+- 🏠 Host machine
+- 🧠 CPU
+- 🎮 GPU
 - 💾 Memory usage
-- 🎨 Color palette
-- 🌸 **Doro** (most important)
+
+Plus **color palette dots** and **Doro** (most important).
 
 ## Requirements
 
 - Bash 4.0+
-- A terminal that supports Unicode braille characters
+- A terminal that supports Unicode
+- [chafa](https://hpjansson.org/chafa/) (optional — for image rendering)
 - Taste
+
+## Logo Priority
+
+When you run `dorofetch --logo doro`, it searches in this order:
+
+1. Direct file path (if the argument is a path to an existing file)
+2. `logos/doro.png` → `.jpg` → `.jpeg` → `.gif` → `.webp` (image formats)
+3. `logos/doro.txt` (braille art fallback)
+4. `logos/doro.txt` (default)
 
 ## License
 
