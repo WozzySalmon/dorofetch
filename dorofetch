@@ -23,22 +23,60 @@ B='\033[1m'          # bold
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 LOGO_DIR="${SCRIPT_DIR}/logos"
-LOGO_FILE="${LOGO_DIR}/doro.txt"
+
+find_logo() {
+    local name="$1"
+
+    # If it's a direct file path that exists, use it as-is
+    if [[ -f "$name" ]]; then
+        echo "$name"
+        return
+    fi
+
+    # Check logos/ directory for image files first, then .txt
+    for ext in png jpg jpeg gif webp txt; do
+        if [[ -f "${LOGO_DIR}/${name}.${ext}" ]]; then
+            echo "${LOGO_DIR}/${name}.${ext}"
+            return
+        fi
+    done
+
+    # Default to logos/doro.txt if nothing found
+    echo "${LOGO_DIR}/doro.txt"
+}
 
 # Allow --logo <name> flag
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --logo|-l)
-            if [[ -f "${LOGO_DIR}/${2}.txt" ]]; then
-                LOGO_FILE="${LOGO_DIR}/${2}.txt"
-            elif [[ -f "$2" ]]; then
-                LOGO_FILE="$2"
-            fi
+            LOGO_FILE=$(find_logo "$2")
             shift 2
             ;;
         *) shift ;;
     esac
 done
+
+# Default if not set by argument
+[[ -z "$LOGO_FILE" ]] && LOGO_FILE=$(find_logo "doro")
+
+load_image_logo() {
+    local file="$1"
+    ART_LINES=()
+
+    if ! command -v chafa &>/dev/null; then
+        echo -e "${Y}Warning: chafa not found. Falling back to text logo.${R}"
+        local base_name
+        base_name=$(basename "${file%.*}")
+        load_logo "${LOGO_DIR}/${base_name}.txt"
+        return
+    fi
+
+    while IFS= read -r line; do
+        ART_LINES+=("$line")
+    done < <(chafa --size x20 --symbols vhalf --color-space din99d "$file")
+
+    LOGO_COLOR="" # Chafa output has its own ANSI codes
+}
 
 load_logo() {
     local file="$1"
@@ -74,7 +112,11 @@ load_logo() {
     fi
 }
 
-load_logo "$LOGO_FILE"
+if [[ "$LOGO_FILE" =~ \.(png|jpg|jpeg|gif|webp)$ ]]; then
+    load_image_logo "$LOGO_FILE"
+else
+    load_logo "$LOGO_FILE"
+fi
 
 # ── System Info ──────────────────────────────────────────────────────────
 
