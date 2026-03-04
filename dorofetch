@@ -73,7 +73,7 @@ load_image_logo() {
 
     while IFS= read -r line; do
         ART_LINES+=("$line")
-    done < <(chafa --size x20 --symbols vhalf --color-space din99d "$file")
+    done < <(chafa --size x30 --symbols braille --color-space din99d "$file")
 
     LOGO_COLOR="" # Chafa output has its own ANSI codes
 }
