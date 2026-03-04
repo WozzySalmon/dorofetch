@@ -211,7 +211,7 @@ INFO_START=52
 echo ""
 # "dorofetch" label above everything (bold + double-width spacing)
 printf "\033[${INFO_START}G"
-echo -e "${P}${B}     D o r o f e t c h${R}"
+echo -e "${P}${B}       D o r o f e t c h${R}"
 
 for ((i = 0; i < art_count; i++)); do
     printf "  ${LOGO_COLOR}%s${R}\033[${INFO_START}G" "${ART_LINES[$i]}"
