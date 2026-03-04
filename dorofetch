@@ -73,7 +73,7 @@ load_image_logo() {
 
     while IFS= read -r line; do
         ART_LINES+=("$line")
-    done < <(chafa --size x30 --symbols braille --color-space din99d "$file")
+    done < <(chafa --size x20 --symbols vhalf --color-space din99d "$file")
 
     LOGO_COLOR="" # Chafa output has its own ANSI codes
 }
@@ -208,17 +208,17 @@ info_count=${#INFO_LINES[@]}
 INFO_START=52
 
 echo ""
+# "dorofetch" label above everything
+printf "\033[${INFO_START}G"
+echo -e "${P}${B}     d o r o f e t c h${R}"
+
 for ((i = 0; i < art_count; i++)); do
     printf "  ${LOGO_COLOR}%s${R}\033[${INFO_START}G" "${ART_LINES[$i]}"
     echo -e "${INFO_LINES[$i]:-}"
 done
 
-# "dorofetch" label + next info line
-printf "  ${LOGO_COLOR}     d o r o f e t c h${R}\033[${INFO_START}G"
-echo -e "${INFO_LINES[$art_count]:-}"
-
-# remaining info lines
-for ((i = art_count + 1; i < info_count; i++)); do
+# remaining info lines beyond the art
+for ((i = art_count; i < info_count; i++)); do
     printf "\033[${INFO_START}G"
     echo -e "${INFO_LINES[$i]}"
 done
