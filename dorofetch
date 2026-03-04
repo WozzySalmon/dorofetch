@@ -184,8 +184,8 @@ USER_HOST="${P}${B}${USER}${R}${W}@${P}${B}$(hostname)${R}"
 SEP="${M}──────────────────────────────${R}"
 
 INFO_LINES=(
-    "$USER_HOST"
     "$SEP"
+    "${P}${B} User${R}     ${W}${USER}@$(hostname)${R}"
     "${P}${B} OS${R}       ${W}$(get_os)${R}"
     "${P}${B} Kernel${R}   ${W}$(get_kernel)${R}"
     "${P}${B} Uptime${R}   ${W}$(get_uptime)${R}"
