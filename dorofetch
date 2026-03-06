@@ -158,11 +158,29 @@ get_memory() {
 }
 
 get_gpu() {
-    if command -v lspci &>/dev/null; then
-        lspci 2>/dev/null | grep -i 'vga\|3d\|display' | head -1 | sed 's/.*: //'
-    elif [[ "$(uname)" == "Darwin" ]]; then
-        system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model" | sed 's/.*: //'
-    else echo "Unknown"; fi
+    local gpu=""
+
+    # nvidia-smi works on native Linux AND WSL
+    if command -v nvidia-smi &>/dev/null; then
+        gpu=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1)
+    fi
+
+    # lspci for native Linux (AMD/Intel/etc)
+    if [[ -z "$gpu" ]] && command -v lspci &>/dev/null; then
+        gpu=$(lspci 2>/dev/null | grep -i 'vga\|3d\|display' | head -1 | sed 's/.*: //')
+    fi
+
+    # WSL fallback: ask Windows directly
+    if [[ -z "$gpu" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
+        gpu=$(powershell.exe -Command "Get-CimInstance Win32_VideoController | Select -First 1 -ExpandProperty Name" 2>/dev/null | tr -d '\r')
+    fi
+
+    # macOS
+    if [[ -z "$gpu" ]] && [[ "$(uname)" == "Darwin" ]]; then
+        gpu=$(system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model" | sed 's/.*: //')
+    fi
+
+    echo "${gpu:-Unknown}"
 }
 
 get_packages() {
